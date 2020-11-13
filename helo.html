@@ -1,2 +1,496 @@
-# Web
-Create a branch and submit file of all tasks using your branch.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"  type="text/css" href="dsa.css">
+    <title>Shortest path finder</title>
+    <style>
+        *
+        {
+            padding:0px;
+            margin:0px;
+        }
+        table,th,td
+        {
+        border: 1px solid rgb(207, 81, 81);
+        border-collapse: collapse;
+        padding: 9px;
+        }
+        #mytable {
+        border: 2px solid rgb(190, 48, 48);
+        border-style: solid;
+        margin-left: 20px;
+        margin-right: auto;
+        padding-left:15px;
+        }
+    </style>
+</head>
+<body style="background-image:url('img/background\ image.jpg');width:100%;padding:10px;">
+    <h1 id="header" style="text-align:center;color:blanchedalmond;">MINIMUM PATH VISUALIZER</h1>
+    <br>
+    <nav style="width:1500px;display:flex;flex-direction:row;align-items:initial;justify-content:space-between;border:6px solid black;margin-bottom:50px;border-radius:8px;">
+        
+        <button class="x" onclick="start()">START POINT</button>
+        <button class="x" onclick="stop()">END POINT</button>
+        <button class="x" onclick="block()">BLOCKS OR OBSTACLES</button>
+        <button class="x" onclick="reset()">RESET</button>
+        <button class="x" onclick="remove()">REMOVE BLOCKS</button>
+        <button class="x" onclick="ranblock()">GENERATE PREDEFINED BLOCKS</button>
+        <button class="x" onclick="main()">DIJKSTRA ALGORITHM</button>
+        <button class="x" onclick="astar()">A STAR ALGORITHM</button>
+    </nav>
+</body>
+
+<!-- javascript code -->
+
+
+<script>
+    var x = document.createElement("TABLE");
+    x.setAttribute("id", "myTable");
+    x.setAttribute("style", "border:4px solid ;border-style: solid;margin-right: auto;margin-left: auto;");
+    document.body.appendChild(x);
+    var y = document.createElement("TBODY");
+    y.setAttribute("id", "mybody");
+    document.getElementById("myTable").appendChild(y);
+    for (var i = 0; i < 25; i++) {
+        var z = document.createElement("TR");
+        document.getElementById("mybody").appendChild(z);
+        for (var j = 0; j < 50; j++) {
+            var w = document.createElement("TD");
+            w.setAttribute("style", "height:5px;width:5px;background-color:#eedddd;border: 1px solid Gray;border-collapse: collapse;padding: 9px;")
+            z.appendChild(w);
+        }
+    }
+    var check = 0
+    var check1 = 0
+    var bl = [];
+    var s = [1, 1];
+    var en = [4, 5];
+    var dia = 0;
+    var objarr = [];
+    var mainarr = [];
+
+    function remove() {
+        check = 4
+    }
+
+    function reset() {
+        dia = 0;
+        check = 0;
+        check1 = 0;
+        bl = [];
+        s = [10, 10];
+        en = [10, 22];
+        visited = [s];
+        objarr = [];
+        mainarr = [];
+        for (var c = 0; c < 25; c++) {
+            for (var d = 0; d < 50; d++) {
+                var x = document.getElementById("myTable").rows[c].cells;
+                x[d].style.backgroundColor = "#eedddd";
+
+            }
+        }
+    }
+
+    function diagonal() {
+        dia = 1;
+    }
+
+    function ranblock() {
+        for (var c = 0; c < 25; c++) {
+            for (var d = 0; d < 50; d++) {
+                if (Math.random() > 0.6) {
+                    var x = document.getElementById("myTable").rows[c].cells;
+                    x[d].style.backgroundColor = "#333333";
+                    bl.push([c, d]);
+                }
+            }
+
+        }
+    }
+
+    function start() 
+    {
+        check = 1
+    }
+
+    function stop() {
+        check = 2
+    }
+
+    function block() {
+        check = 3
+    }
+
+    var table = document.getElementById('myTable');
+    var getTBody = table.getElementsByTagName("tbody")[0];
+    getTBody.onclick = function(e) {
+        var a = e.target.parentNode.rowIndex;
+        var b = e.target.cellIndex;
+        if (check == 1) {
+            var x = document.getElementById("myTable").rows[a].cells;
+            x[b].style.backgroundColor = "red";
+            var x = document.getElementById("myTable").rows[s[0]].cells;
+            x[s[1]].style.backgroundColor = "#eedddd";
+            s.push(a, b);
+            s.shift();
+            s.shift();
+        } else if (check == 2) {
+            var x = document.getElementById("myTable").rows[a].cells;
+            x[b].style.backgroundColor = "green";
+            var x = document.getElementById("myTable").rows[en[0]].cells;
+            x[en[1]].style.backgroundColor = "#eedddd";
+            en.push(a, b);
+            en.shift();
+            en.shift();
+
+        } else if (check == 3) {
+            var x = document.getElementById("myTable").rows[a].cells;
+            x[b].style.backgroundColor = "white";
+            bl.push([a, b]);
+        } else if (check == 4) {
+            var x = document.getElementById("myTable").rows[a].cells;
+            x[b].style.backgroundColor = "#eedddd";
+            var index = -1;
+            //var index = bl.indexOf([a, b]);
+            for (var i = 0; i < bl.length; i++) {
+                if (bl[i][0] == a && bl[i][1] == b) {
+                    index = i;
+                    break
+                } else {
+                    index = -1;
+                }
+            }
+            console.log(index)
+            if (index > -1) {
+                bl.splice(index, 1);
+            }
+            console.log(bl)
+        } else {
+
+        }
+    }
+    getTBody.onmousedown = function(e) {
+        if (check == 3) {
+            check1 = 1
+        }
+    }
+    getTBody.onmouseup = function(e) {
+        if (check == 3) {
+            check1 = 0
+        }
+    }
+    getTBody.onmouseover = function(e) {
+        var a = e.target.parentNode.rowIndex;
+        var b = e.target.cellIndex;
+        if ((check == 3) && (check1 == 1)) {
+            var x = document.getElementById("myTable").rows[a].cells;
+            x[b].style.backgroundColor = "#333333";
+            bl.push([a, b]);
+        }
+    }
+
+    async function main() {
+        var visited = [s];
+        var posi = [s[0], s[1]];
+        mainarr.push([posi, null]);
+        class arr {
+            constructor(position, parent) {
+                this.position = position;
+                this.parent = parent;
+            }
+            present() {
+                return "position" + this.position + "parent" + this.parent;
+            }
+        }
+
+        function findparentcl(parentpos) {
+            for (var i = 0; i < objarr.length; i++) {
+                if (objarr[i].position == parentpos) {
+                    return objarr[i]
+                }
+            }
+        }
+
+        function canvisit(cordinates) {
+            for (var i = 0; i < visited.length; i++) {
+                if (visited[i][0] == cordinates[0] && visited[i][1] == cordinates[1]) {
+                    return false
+                }
+            }
+            visited.push(cordinates);
+            return true
+        }
+
+        function isend(cord) {
+            if (cord.position[0] == en[0] && cord.position[1] == en[1]) {
+                return true
+            }
+            return false
+        }
+
+        function isinscope(pos) {
+            if ((pos[0] >= 0 && pos[1] >= 0 && pos[0] <= 24 && pos[1] <= 49)) {
+
+                return true
+            }
+            return false
+        }
+
+        function block(pos) {
+
+            for (var i = 0; i < bl.length; i++) {
+                if (bl[i][0] == pos[0] && bl[i][1] == pos[1]) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        function findshortest(obj) {
+            arra = [];
+            while (true) {
+                arra.push([obj.position[0], obj.position[1]]);
+                obj = findparentcl(obj.parent);
+                if (obj.parent == null) {
+                    arra.push([obj.position[0], obj.position[1]]);
+                    arra.reverse();
+                    return arra
+                }
+            }
+        }
+
+        function findchild(ppos) {
+            //1
+            var tem = ppos[0][0] - 1;
+            var poss = [tem, ppos[0][1]];
+            if (isinscope(poss) && canvisit(poss) && block(poss)) {
+                mainarr.push([poss, ppos[0]])
+            }
+            //2
+            var tem = ppos[0][0] + 1;
+            var poss = [tem, ppos[0][1]];
+            if (isinscope(poss) && canvisit(poss) && block(poss)) {
+                mainarr.push([poss, ppos[0]])
+            }
+            //3
+            var tem = ppos[0][1] - 1;
+            var poss = [ppos[0][0], tem];
+            if (isinscope(poss) && canvisit(poss) && block(poss)) {
+                mainarr.push([poss, ppos[0]])
+            }
+            //4
+            var tem = ppos[0][1] + 1;
+            var poss = [ppos[0][0], tem];
+            if (isinscope(poss) && canvisit(poss) && block(poss)) {
+                mainarr.push([poss, ppos[0]])
+            }
+            if (dia == 1) {
+                //5
+                var tem = ppos[0][0] + 1;
+                var tem1 = ppos[0][1] + 1;
+                var poss = [tem, tem1];
+                if (isinscope(poss) && canvisit(poss) && block(poss)) {
+                    mainarr.push([poss, ppos[0]])
+                }
+                //6
+                var tem = ppos[0][0] - 1;
+                var tem1 = ppos[0][1] - 1;
+                var poss = [tem, tem1];
+                if (isinscope(poss) && canvisit(poss) && block(poss)) {
+                    mainarr.push([poss, ppos[0]])
+                }
+                //7
+                var tem = ppos[0][0] + 1;
+                var tem1 = ppos[0][1] - 1;
+                var poss = [tem, tem1];
+                if (isinscope(poss) && canvisit(poss) && block(poss)) {
+                    mainarr.push([poss, ppos[0]])
+                }
+                //8
+                var tem = ppos[0][0] - 1;
+                var tem1 = ppos[0][1] + 1; 
+                var poss = [tem, tem1];
+                if (isinscope(poss) && canvisit(poss) && block(poss)) {
+                    mainarr.push([poss, ppos[0]])
+                }
+
+            }
+        }
+        var i = 0;
+        var a = -1;
+        while (true) {
+            var pos = [mainarr[0]];
+            if (mainarr.length == 0) {
+                window.alert("no ways to reach end point")
+            }
+            findchild(pos[0]);
+            if ((pos[0][0][0] !== s[0] || pos[0][0][1] !== s[1]) && (pos[0][0][0] !== en[0] || pos[0][0][1] !== en[1])) {
+                const promise = new Promise((accept) => {
+                    setTimeout(() => {
+                        var x = document.getElementById("myTable").rows[pos[0][0][0]].cells;
+                        x[pos[0][0][1]].style.background = "blue";
+                        accept();
+                    }, 10);
+                });
+                await promise;
+            };
+            objarr[i] = new arr(pos[0][0], pos[0][1]);
+            len = objarr.length;
+            if (isend(objarr[len - 1])) {
+                var arra = findshortest(objarr[len - 1]);
+                for (var i = 0; i < arra.length; i++) {
+                    if ((arra[i][0] !== s[0] || arra[i][1] !== s[1]) && (arra[i][0] !== en[0] || arra[i][1] !== en[1])) {
+                        const promise = new Promise((accept) => {
+                            setTimeout(() => {
+                                var x = document.getElementById("myTable").rows[arra[i][0]].cells;
+                                x[arra[i][1]].style.backgroundColor = "lightgreen";//traversing the shortest path
+                                accept();
+                            }, 10);
+                        });
+                        await promise;
+                    }
+                };
+                break
+            }
+            mainarr.shift();
+            i++;
+        }
+    }
+    function astar()
+    {
+        
+function AStarPathFinder(map, start, end, allowDiagonals) {
+    this.map = map;
+    this.lastCheckedNode = start;
+    this.openSet = [];
+    // openSet starts with beginning node only
+    this.openSet.push(start);
+    this.closedSet = [];
+    this.start = start;
+    this.end = end;
+    this.allowDiagonals = allowDiagonals;
+
+    //This function returns a measure of aesthetic preference for
+    //use when ordering the openSet. It is used to prioritise
+    //between equal standard heuristic scores. It can therefore
+    //be anything you like without affecting the ability to find
+    //a minimum cost path.
+
+    this.visualDist = function(a, b) {
+        return dist(a.i, a.j, b.i, b.j);
+    }
+
+    // An educated guess of how far it is between two points
+
+    this.heuristic = function(a, b) {
+        var d;
+        if (allowDiagonals) {
+            d = dist(a.i, a.j, b.i, b.j);
+        } else {
+            d = abs(a.i - b.i) + abs(a.j - b.j);
+        }
+        return d;
+    }
+
+    // Function to delete element from the array
+    this.removeFromArray = function(arr, elt) {
+        // Could use indexOf here instead to be more efficient
+        for (var i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] == elt) {
+                arr.splice(i, 1);
+            }
+        }
+    }
+
+    //Run one finding step.
+    //returns 0 if search ongoing
+    //returns 1 if goal reached
+    //returns -1 if no solution
+    this.step = function() {
+
+        if (this.openSet.length > 0) {
+
+            // Best next option
+            var winner = 0;
+            for (var i = 1; i < this.openSet.length; i++) {
+                if (this.openSet[i].f < this.openSet[winner].f) {
+                    winner = i;
+                }
+                //if we have a tie according to the standard heuristic
+                if (this.openSet[i].f == this.openSet[winner].f) {
+                    //Prefer to explore options with longer known paths (closer to goal)
+                    if (this.openSet[i].g > this.openSet[winner].g) {
+                        winner = i;
+                    }
+                    //if we're using Manhattan distances then also break ties
+                    //of the known distance measure by using the visual heuristic.
+                    //This ensures that the search concentrates on routes that look
+                    //more direct. This makes no difference to the actual path distance
+                    //but improves the look for things like games or more closely
+                    //approximates the real shortest path if using grid sampled data for
+                    //planning natural paths.
+                    if (!this.allowDiagonals) {
+                        if (this.openSet[i].g == this.openSet[winner].g &&
+                            this.openSet[i].vh < this.openSet[winner].vh) {
+                            winner = i;
+                        }
+                    }
+                }
+            }
+            var current = this.openSet[winner]; 
+            this.lastCheckedNode = current;
+
+            // Did I finish?
+            if (current === this.end) {
+                console.log("DONE!");
+                return 1;
+            }
+
+            // Best option moves from openSet to closedSet
+            this.removeFromArray(this.openSet, current);
+            this.closedSet.push(current);
+
+            // Check all the neighbors
+            var neighbors = current.getNeighbors();
+
+            for (var i = 0; i < neighbors.length; i++) {
+                var neighbor = neighbors[i];
+
+                // Valid next spot?
+                if (!this.closedSet.includes(neighbor)) {
+                    // Is this a better path than before?
+                    var tempG = current.g + this.heuristic(neighbor, current);
+
+                    // Is this a better path than before?
+                    if (!this.openSet.includes(neighbor)) {
+                        this.openSet.push(neighbor);
+                    } else if (tempG >= neighbor.g) {
+                        // No, it's not a better path
+                        continue;
+                    }
+
+                    neighbor.g = tempG;
+                    neighbor.h = this.heuristic(neighbor, end);
+                    if (!allowDiagonals) {
+                        neighbor.vh = this.visualDist(neighbor, end);
+                    }
+                    neighbor.f = neighbor.g + neighbor.h;
+                    neighbor.previous = current;
+                }
+
+            }
+            return 0;
+            // Uh oh, no solution
+        } else {
+            console.log('no solution');
+            return -1;
+        }
+    }
+}
+
+    }
+</script>
+</html>
